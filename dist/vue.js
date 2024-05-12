@@ -6584,30 +6584,30 @@
         // 旧节点的头节点与新节点的尾节点进行比较
         } else if (sameVnode(oldStartVnode, newEndVnode)) {
           patchVnode(oldStartVnode, newEndVnode, insertedVnodeQueue, newCh, newEndIdx);
-          canMove && nodeOps.insertBefore(parentElm, oldStartVnode.elm, nodeOps.nextSibling(oldEndVnode.elm));
+          canMove && nodeOps.insertBefore(parentElm, oldStartVnode.elm, nodeOps.nextSibling(oldEndVnode.elm)); // 将旧节点的头节点移动到旧节点的尾节点之后
           oldStartVnode = oldCh[++oldStartIdx]; // 移动旧节点的头指针以及更新旧节点的头节点
           newEndVnode = newCh[--newEndIdx];     // 移动新节点的尾指针以及更新新节点的尾节点
         // 旧节点的尾节点与新节点的头节点进行比较
         } else if (sameVnode(oldEndVnode, newStartVnode)) {
           patchVnode(oldEndVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx);
-          canMove && nodeOps.insertBefore(parentElm, oldEndVnode.elm, oldStartVnode.elm);
+          canMove && nodeOps.insertBefore(parentElm, oldEndVnode.elm, oldStartVnode.elm); // 将旧节点的尾节点移动到旧节点的头节点之前
           oldEndVnode = oldCh[--oldEndIdx];     // 移动旧节点的尾指针以及更新旧节点的尾节点
           newStartVnode = newCh[++newStartIdx]; // 移动新节点的头指针以及更新新节点的头节点
         } else {
-          if (isUndef(oldKeyToIdx)) { oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx); } // 生成旧节点映射表
+          // 生成旧节点映射表, 根据新节点的 key 查找对应的旧节点在旧节点列表中的索引
+          if (isUndef(oldKeyToIdx)) { oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx); }
           idxInOld = isDef(newStartVnode.key)
             ? oldKeyToIdx[newStartVnode.key]
             : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx);
-          if (isUndef(idxInOld)) { // New element // 在映射表中不存在, 创建元素
+          if (isUndef(idxInOld)) { // 如果在映射表中找不到对应的索引, 则说明这是一个新节点, 需要创建
             createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx);
-          } else { // 在映射表中存在, 移动节点
+          } else { // 在映射表中找到了对应的旧节点, 尝试复用或者移动
             vnodeToMove = oldCh[idxInOld];
-            if (sameVnode(vnodeToMove, newStartVnode)) {
-              patchVnode(vnodeToMove, newStartVnode, insertedVnodeQueue, newCh, newStartIdx);
-              oldCh[idxInOld] = undefined;
-              canMove && nodeOps.insertBefore(parentElm, vnodeToMove.elm, oldStartVnode.elm); 
-            } else {
-              // same key but different element. treat as new element
+            if (sameVnode(vnodeToMove, newStartVnode)) { // 如果找到的旧节点和新节点是同一个节点, 则尝试复用
+              patchVnode(vnodeToMove, newStartVnode, insertedVnodeQueue, newCh, newStartIdx); // 复用旧节点
+              oldCh[idxInOld] = undefined; // 将旧节点置为 undefined, 表示已经被复用
+              canMove && nodeOps.insertBefore(parentElm, vnodeToMove.elm, oldStartVnode.elm); // 将复用的节点移动到旧节点的头节点之前
+            } else { // 如果 key 相同但节点不同, 按照新节点处理, 创建新节点并插入父级节点
               createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx);
             }
           }
@@ -6903,8 +6903,8 @@
         createElm(vnode, insertedVnodeQueue); // 创建新的 DOM元素并将其插入到 DOM中
       } else {
         var isRealElement = isDef(oldVnode.nodeType); // 是否为真实 DOM (是否拥有nodeType属性)
-        // sameVnode: 新旧节点是否相等, 此处的相等表示Vnode的tag(标签名)属性和key(节点标识)属性相等
-        // 旧节点为虚拟节点且新旧节点相同 (使用Diff算法更新)
+        // sameVnode: 新旧节点是否相等, 此处的相等表示 Vnode的 tag(标签名)属性和 key(节点标识)属性相等
+        // 旧节点为虚拟节点且新旧节点相同 (使用 Diff算法更新)
         if (!isRealElement && sameVnode(oldVnode, vnode)) { // 当旧节点不是真实 DOM元素且新旧节点相同时, 执行更新操作
           patchVnode(oldVnode, vnode, insertedVnodeQueue, null, null, removeOnly);
         // 旧节点为虚拟节点且新旧节点不相同 或 旧节点为真实节点(创建并插入新节点, 移除旧节点)
