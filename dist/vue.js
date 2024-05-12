@@ -3041,23 +3041,23 @@
   }
 
   function installRenderHelpers (target) { // 安装渲染相关的函数
-    target._o = markOnce; // 用于标记一个节点只会渲染一次
-    target._n = toNumber; // 将一个值转换为数字
-    target._s = toString; // 将一个值转换为字符串
-    target._l = renderList; // 用于渲染一个数组
-    target._t = renderSlot; // 用于渲染插槽内容
-    target._q = looseEqual; // 比较两个值是否相等
-    target._i = looseIndexOf; // 返回数组中某个值的索引
-    target._m = renderStatic; // 根据给定的索引渲染静态树
+    target._o = markOnce; // 标记一个节点只渲染一次
+    target._n = toNumber; // 将值转换为数字
+    target._s = toString; // 将值转换为字符串
+    target._l = renderList; // 渲染数组
+    target._t = renderSlot; // 渲染插槽
+    target._q = looseEqual; // 松散相等判断
+    target._i = looseIndexOf; // 在数组中查找元素
+    target._m = renderStatic; // 渲染静态节点
     target._f = resolveFilter; // 解析过滤器
     target._k = checkKeyCodes; // 检查按键码
     target._b = bindObjectProps; // 绑定对象属性
     target._v = createTextVNode; // 创建文本节点
     target._e = createEmptyVNode; // 创建空节点
     target._u = resolveScopedSlots; // 解析作用域插槽
-    target._g = bindObjectListeners; // 处理v-on指令的参数绑定
+    target._g = bindObjectListeners; // 绑定对象监听器
     target._d = bindDynamicKeys; // 处理动态指令的参数绑定
-    target._p = prependModifier; // 添加修饰符
+    target._p = prependModifier; // 增加前置修饰符标记
   }
 
   /**
@@ -3645,13 +3645,13 @@
    * @param {VueConstructor} Vue - Vue构造函数
    */
   function renderMixin (Vue) {
-    installRenderHelpers(Vue.prototype); // 安装运行时便利辅助函数
+    installRenderHelpers(Vue.prototype); // 安装运行时辅助函数
 
-    Vue.prototype.$nextTick = function (fn) { // Vue实例原型上添加 $nextTick方法
+    Vue.prototype.$nextTick = function (fn) { // 用于在 DOM更新之后执行回调
       return nextTick(fn, this)
     };
 
-    Vue.prototype._render = function () { // Vue实例原型上添加 _render方法
+    Vue.prototype._render = function () { // 用于生成虚拟 DOM
       var vm = this;
       var ref = vm.$options;
       var render = ref.render; // 渲染函数
@@ -3958,7 +3958,7 @@
    */
   function eventsMixin (Vue) {
     var hookRE = /^hook:/; // 用于匹配钩子事件的正则表达式
-    Vue.prototype.$on = function (event, fn) { // 添加事件监听方法
+    Vue.prototype.$on = function (event, fn) { // 用于添加监听事件
       var vm = this;
       if (Array.isArray(event)) { // 如果事件名是数组, 则递归调用 $on方法
         for (var i = 0, l = event.length; i < l; i++) {
@@ -3973,7 +3973,7 @@
       return vm // 链式调用
     };
 
-    Vue.prototype.$once = function (event, fn) { // 添加一次性事件监听方法
+    Vue.prototype.$once = function (event, fn) { // 用于添加监听事件, 但事件只触发一次, 触发后即被移除
       var vm = this;
       function on () { // 定义一次性事件处理函数
         vm.$off(event, on); // 移除事件监听器
@@ -3984,7 +3984,7 @@
       return vm // 链式调用
     };
 
-    Vue.prototype.$off = function (event, fn) { // 移除事件监听方法
+    Vue.prototype.$off = function (event, fn) { // 用于移除事件监听器
       var vm = this;
       if (!arguments.length) { // 移除所有事件
         vm._events = Object.create(null);
@@ -4016,7 +4016,7 @@
       return vm // 链式调用
     };
 
-    Vue.prototype.$emit = function (event) { // 触发事件方法
+    Vue.prototype.$emit = function (event) { // 用于触发事件
       var vm = this;
       {
         var lowerCaseEvent = event.toLowerCase(); // 将事件名转为小写
@@ -5093,14 +5093,14 @@
         warn("$props is readonly.", this);
       };
     }
-    Object.defineProperty(Vue.prototype, '$data', dataDef); // 在 Vue原型上定义 $data属性
-    Object.defineProperty(Vue.prototype, '$props', propsDef); // 在 Vue原型上定义 $props 属性
+    Object.defineProperty(Vue.prototype, '$data', dataDef); // 在 Vue原型上定义 $data属性 (获取实例的数据)
+    Object.defineProperty(Vue.prototype, '$props', propsDef); // 在 Vue原型上定义 $props 属性 (获取实例的 props对象)
 
-    Vue.prototype.$set = set; // 设置响应式对象的属性值
-    Vue.prototype.$delete = del; // 删除响应式对象的属性值
+    Vue.prototype.$set = set; // 向响应式对象中添加一个属性
+    Vue.prototype.$delete = del; // 删除响应式对象的属性
 
     /**
-     * 在组件实例上创建一个观察者
+     * 在组件实例上创建一个观察者 (用于监测数据的变化)
      * @param {string|Function} expOrFn - 要观察的表达式或函数
      * @param {Function|Object} cb - 回调函数或者回调函数的配置对象
      * @param {Object} options - 观察者的选项
@@ -5130,16 +5130,15 @@
     };
   }
 
-  var uid$3 = 0; // 唯一的标识符
-
+  var uid$3 = 0; // 实例的唯一的标识符
   /**
-   * 初始化 Vue实例的初始化方法
-   * @param {Function} Vue - Vue构造函数
+   * 初始化 Vue 实例的初始化方法
+   * @param {Function} Vue - Vue 构造函数
    */
   function initMixin (Vue) {
     /**
-     * Vue实例的初始化方法
-     * @param {Object} options 配置项
+     * Vue 实例的初始化方法
+     * @param {Object} options - Vue 的选项对象
      */
     Vue.prototype._init = function (options) {
       var vm = this; // 当前实例
@@ -5168,13 +5167,13 @@
 
       vm._self = vm; // 暴露真实的组件实例
       initLifecycle(vm); // 初始化生命周期
-      initEvents(vm); // 初始化事件
+      initEvents(vm); // 初始化事件中心
       initRender(vm); // 初始化渲染函数
-      callHook(vm, 'beforeCreate'); // 调用生命周期钩子函数 beforeCreate
-      initInjections(vm); // 解析注入的内容 (inject)
-      initState(vm); // 初始化状态 (props/data/methods/watch/computed等属性)
-      initProvide(vm); // // 解析提供的内容 (provide)
-      callHook(vm, 'created'); // 调用生命周期钩子函数 created
+      callHook(vm, 'beforeCreate'); // 调用生命周期钩子函数 - beforeCreate
+      initInjections(vm); // 初始化注入的内容
+      initState(vm); // 初始化状态 (props, data, methods, watch, computed等选项)
+      initProvide(vm); // 初始化提供的内容
+      callHook(vm, 'created'); // 调用生命周期钩子函数 - created
 
       if (config.performance && mark) { // 性能分析 (可忽略)
         vm._name = formatComponentName(vm, false);
@@ -5257,8 +5256,8 @@
   }
 
   /**
-   * Vue构造函数
-   * @param {Object} options - 选项对象
+   * Vue 构造函数
+   * @param {Object} options - Vue 的选项对象
    */
   function Vue (options) {
     if (!(this instanceof Vue)) { // 如果不是通过 new关键字调用 Vue构造函数, 则发出警告
@@ -5267,11 +5266,11 @@
     this._init(options); // 带着配置项初始化实例
   }
 
-  initMixin(Vue); // 将初始化功能混入到 Vue构造函数中 (_init)
-  stateMixin(Vue); // 将状态管理功能混入到 Vue构造函数中 ($set/$delete/$watch)
-  eventsMixin(Vue); // 将事件处理功能混入到 Vue构造函数中 ($on/$once/$off/$emit)
-  lifecycleMixin(Vue); // 将生命周期管理功能混入到 Vue构造函数中 (_update)
-  renderMixin(Vue); // 将渲染功能混入到 Vue构造函数中 ($nextTick/_render)
+  initMixin(Vue); // 将 Vue实例初始化的方法挂载到 Vue原型上 ( _init )
+  stateMixin(Vue); // 将状态管理功能挂载到 Vue原型上 ( $data/$props/$set/$delete/$watch )
+  eventsMixin(Vue); // 将事件处理功能挂载到 Vue原型上 ( $on/$once/$off/$emit )
+  lifecycleMixin(Vue); // 将生命周期管理功能挂载到 Vue原型上 ( _update/$forceUpdate/$destroy )
+  renderMixin(Vue); // 将渲染功能挂载到 Vue原型上 ( $nextTick/_render )
 
   /**
    * 初始化 Vue.use方法 (用于注册插件)
@@ -5629,11 +5628,11 @@
       defineReactive: defineReactive$$1 // 定义响应式数据
     };
 
-    Vue.set = set; // 在全局添加 Vue.set方法用于设置响应式对象的属性
-    Vue.delete = del; // 在全局添加 Vue.delete方法用于删除响应式对象的属性
-    Vue.nextTick = nextTick; // 在全局添加 Vue.nextTick方法用于异步执行回调函数
+    Vue.set = set; // Vue.set 方法: 用于设置响应式对象的属性
+    Vue.delete = del; // Vue.delete 方法: 用于删除响应式对象的属性
+    Vue.nextTick = nextTick; // Vue.nextTick 方法: 用于异步执行回调函数
 
-    Vue.observable = function (obj) { // 将一个普通的对象转换为可观察的对象, 使其具有响应式特性
+    Vue.observable = function (obj) { // 用于将一个普通对象转换为响应式对象, 使其具有响应式特性
       observe(obj);
       return obj
     };
@@ -5646,10 +5645,10 @@
     Vue.options._base = Vue; // 将 Vue自身作为 _base属性存储在 options中 (用于多实例场景下扩展纯对象组件)
     extend(Vue.options.components, builtInComponents); // 将内置组件扩展到全局组件中
 
-    initUse(Vue); // 初始化 Vue.use方法
-    initMixin$1(Vue); // 初始化 Vue.mixin方法
-    initExtend(Vue); // 初始化 Vue.extend方法
-    initAssetRegisters(Vue); // 初始化资源注册方法 (component/directive/filter)
+    initUse(Vue); // Vue.use 方法: 安装插件
+    initMixin$1(Vue); // Vue.mixin 方法: 全局混入
+    initExtend(Vue); // Vue.extend 方法: 创建子类
+    initAssetRegisters(Vue); // 用于注册全局指令、过滤器和组件 (component, directive, filter)
   }
 
   initGlobalAPI(Vue); // 初始化全局 API

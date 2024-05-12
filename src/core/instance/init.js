@@ -10,9 +10,16 @@ import { initLifecycle, callHook } from './lifecycle'
 import { initProvide, initInjections } from './inject'
 import { extend, mergeOptions, formatComponentName } from '../util/index'
 
-let uid = 0
-
+let uid = 0 // 实例的唯一的标识符
+/**
+ * 初始化 Vue 实例的初始化方法
+ * @param {Function} Vue - Vue 构造函数
+ */
 export function initMixin (Vue: Class<Component>) {
+  /**
+   * Vue 实例的初始化方法
+   * @param {Object} options - Vue 的选项对象
+   */
   Vue.prototype._init = function (options?: Object) {
     const vm: Component = this
     // a uid
