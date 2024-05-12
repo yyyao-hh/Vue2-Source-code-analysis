@@ -6122,6 +6122,10 @@
     return map
   }
 
+  /**
+   * 创建 patch函数
+   * @param {Object} backend 
+   */
   function createPatchFunction (backend) {
     var i, j;
     var cbs = {};
@@ -6563,9 +6567,9 @@
 
       // 双端指针Diff
       while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
-        if (isUndef(oldStartVnode)) {
-          oldStartVnode = oldCh[++oldStartIdx]; // Vnode has been moved left
-        } else if (isUndef(oldEndVnode)) {
+        if (isUndef(oldStartVnode)) { // 如果旧节点的头节点为空, 说明该节点已经在新节点列表中找到了位置, 需要将旧节点的头指针向后移动
+          oldStartVnode = oldCh[++oldStartIdx];
+        } else if (isUndef(oldEndVnode)) { // 如果旧节点的尾节点为空, 说明该节点已经在新节点列表中找到了位置, 需要将旧节点的尾指针向前移动
           oldEndVnode = oldCh[--oldEndIdx];
         // 旧节点的头节点与新节点的头节点进行比较
         } else if (sameVnode(oldStartVnode, newStartVnode)) {
@@ -6578,13 +6582,13 @@
           oldEndVnode = oldCh[--oldEndIdx]; // 移动旧节点的尾指针以及更新旧节点的尾节点
           newEndVnode = newCh[--newEndIdx]; // 移动新节点的尾指针以及更新新节点的尾节点
         // 旧节点的头节点与新节点的尾节点进行比较
-        } else if (sameVnode(oldStartVnode, newEndVnode)) { // Vnode moved right
+        } else if (sameVnode(oldStartVnode, newEndVnode)) {
           patchVnode(oldStartVnode, newEndVnode, insertedVnodeQueue, newCh, newEndIdx);
           canMove && nodeOps.insertBefore(parentElm, oldStartVnode.elm, nodeOps.nextSibling(oldEndVnode.elm));
           oldStartVnode = oldCh[++oldStartIdx]; // 移动旧节点的头指针以及更新旧节点的头节点
           newEndVnode = newCh[--newEndIdx];     // 移动新节点的尾指针以及更新新节点的尾节点
         // 旧节点的尾节点与新节点的头节点进行比较
-        } else if (sameVnode(oldEndVnode, newStartVnode)) { // Vnode moved left
+        } else if (sameVnode(oldEndVnode, newStartVnode)) {
           patchVnode(oldEndVnode, newStartVnode, insertedVnodeQueue, newCh, newStartIdx);
           canMove && nodeOps.insertBefore(parentElm, oldEndVnode.elm, oldStartVnode.elm);
           oldEndVnode = oldCh[--oldEndIdx];     // 移动旧节点的尾指针以及更新旧节点的尾节点
